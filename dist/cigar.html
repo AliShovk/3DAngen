@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>Персонаж · 3D</title>
+<title>Сигара · 3D</title>
 <style>
   :root{
     --ink:#241a2e;
@@ -95,6 +95,7 @@
 </div>
 
 <div class="bar">
+  <button data-act="dance" class="on">Танец</button>
   <button data-act="spin">Авто-вращение</button>
   <button data-act="smoke" class="on">Дым</button>
   <span class="sep"></span>
@@ -484,26 +485,34 @@ function glove(dir, origin){
   return g;
 }
 
+const armPivots = {};
 [-1, 1].forEach(function(sign){
   const shoulder = new THREE.Vector3(sign * .150, 1.02, .015);
   const elbow = new THREE.Vector3(sign * .315, 1.14, .055);
   const wrist = new THREE.Vector3(sign * .410, 1.30, .075);
+  const pivot = new THREE.Group();
+  pivot.position.copy(shoulder);
+  hero.add(pivot);
   const sh = ball(.045, M.limb, 16);
   sh.scale.set(1, .9, .9);
   sh.position.copy(shoulder);
   hero.add(sh);
-  stick(shoulder.toArray(), elbow.toArray(), .021, M.limb, hero);
-  stick(elbow.toArray(), wrist.toArray(), .019, M.limb, hero);
+  const s1 = stick(shoulder.toArray(), elbow.toArray(), .021, M.limb, hero);
+  const s2 = stick(elbow.toArray(), wrist.toArray(), .019, M.limb, hero);
   const dir = new THREE.Vector3().subVectors(wrist, elbow);
   const g = glove(dir, wrist);
   hero.add(g);
+  [s1, s2, g].forEach(function(o){ pivot.attach(o); });
+  armPivots[sign > 0 ? 'R' : 'L'] = pivot;
 });
 
 /* --- ноги --- */
+const legParts = {};
 [-1, 1].forEach(function(sign){
   const hip = new THREE.Vector3(sign * .050, .42, .01);
   const ankle = new THREE.Vector3(sign * .118, .175, .035);
-  stick(hip.toArray(), ankle.toArray(), .022, M.limb, hero);
+  const s1 = stick(hip.toArray(), ankle.toArray(), .022, M.limb, hero);
+  legParts[sign > 0 ? 'R' : 'L'] = {hip:hip, stick:s1};
 });
 
 /* --- кроссовки --- */
@@ -537,9 +546,22 @@ function sneaker(sign){
   g.position.set(sign * .145, 0, .035);
   g.rotation.y = -sign * .34;
   hero.add(g);
+  return g;
 }
-sneaker(1);
-sneaker(-1);
+legParts.R.shoe = sneaker(1);
+legParts.L.shoe = sneaker(-1);
+
+// пивоты ног (бедро)
+const legPivots = {};
+[-1, 1].forEach(function(sign){
+  const part = legParts[sign > 0 ? 'R' : 'L'];
+  const pivot = new THREE.Group();
+  pivot.position.copy(part.hip);
+  hero.add(pivot);
+  pivot.attach(part.stick);
+  pivot.attach(part.shoe);
+  legPivots[sign > 0 ? 'R' : 'L'] = pivot;
+});
 
 // контактные тени под обувью
 [-1, 1].forEach(function(sign){
@@ -651,7 +673,8 @@ scene.add(rim);
 /* ---------------------------------------------------------------- camera */
 const target = new THREE.Vector3(0, .92, 0);
 const cam = {az:.20, pol:1.40, rad:3.95, taz:.20, tpol:1.40, trad:3.95};
-let spin = false, smokeOn = true, heroSpin = 0;
+let spin = false, smokeOn = true, heroSpin = 0, danceOn = true;
+let beatBounce = 0;
 let dragging = false, lastX = 0, lastY = 0, moved = 0, lastInteract = performance.now();
 
 function applyCamera(){
@@ -705,6 +728,7 @@ document.querySelector('.bar').addEventListener('click', function(e){
   if (dot){ setBg(dot.dataset.bg); return; }
   if (!b) return;
   const a = b.dataset.act;
+  if (a === 'dance'){ danceOn = !danceOn; b.classList.toggle('on', danceOn); }
   if (a === 'spin'){ spin = !spin; b.classList.toggle('on', spin); }
   if (a === 'smoke'){ smokeOn = !smokeOn; b.classList.toggle('on', smokeOn); smoke.visible = smokeOn; }
   lastInteract = performance.now();
@@ -732,6 +756,7 @@ function setBg(name){
 
 addEventListener('keydown', function(e){
   const k = e.key.toLowerCase();
+  if (k === 'd'){ danceOn = !danceOn; document.querySelector('[data-act=dance]').classList.toggle('on', danceOn); }
   if (k === 'r'){ spin = !spin; document.querySelector('[data-act=spin]').classList.toggle('on', spin); }
   if (k === 's'){ smokeOn = !smokeOn; document.querySelector('[data-act=smoke]').classList.toggle('on', smokeOn); smoke.visible = smokeOn; }
   if (k === ' ') puff();
@@ -767,9 +792,46 @@ function frame(){
   cam.rad += (cam.trad - cam.rad) * ck;
   applyCamera();
 
-  // лёгкое покачивание персонажа
-  hero.position.y = .06 + Math.sin(time * 1.6) * .008;
-  hero.rotation.z = Math.sin(time * .9) * .012;
+  // танец в духе Снупа: медленный бит, два шага, кивки, руки «на публику»
+  if (danceOn){
+    const beat = time * 1.45;                 // ≈87 BPM
+    const ph = beat * Math.PI;
+    const bar = Math.floor(beat / 4) % 4;     // фразы по 4 бита
+    const bounce = Math.abs(Math.sin(ph));
+    beatBounce = bounce;
+    hero.position.y = .06 + bounce * .038;
+    hero.position.x = Math.sin(ph * .5) * .095;
+    hero.position.z = Math.cos(ph * .5) * .03;
+    hero.rotation.z = -Math.sin(ph * .5) * .11 + Math.sin(ph * 2) * .022;
+    hero.rotation.x = -.075 + Math.sin(ph) * .045;
+    hero.scale.set(1 + (1 - bounce) * .022, 1 - (1 - bounce) * .04, 1 + (1 - bounce) * .022);
+    hero.rotation.y = heroSpin + Math.sin(ph * .5) * .12;
+
+    legPivots.L.rotation.x = .14 + Math.sin(ph) * .42;
+    legPivots.R.rotation.x = .14 - Math.sin(ph) * .42;
+    legPivots.L.rotation.z = Math.sin(ph * .5) * .11;
+    legPivots.R.rotation.z = Math.sin(ph * .5) * .11;
+
+    const up = (bar === 1 || bar === 2) ? .55 : 0;
+    armPivots.L.rotation.z = .55 + Math.sin(ph) * .38 + up;
+    armPivots.R.rotation.z = -.55 - Math.sin(ph) * .38 - up;
+    armPivots.L.rotation.x = Math.sin(ph + 1.2) * .34;
+    armPivots.R.rotation.x = Math.sin(ph) * .34;
+
+    if (bar === 3){
+      hero.rotation.x += Math.sin(ph * 2) * .05;
+      hero.rotation.y += Math.sin(ph) * .10;
+    }
+  } else {
+    beatBounce = 0;
+    hero.position.set(0, .06 + Math.sin(time * 1.6) * .008, 0);
+    hero.rotation.set(0, heroSpin, Math.sin(time * .9) * .012);
+    hero.scale.set(1, 1, 1);
+    ['L', 'R'].forEach(function(k){
+      armPivots[k].rotation.set(0, 0, 0);
+      legPivots[k].rotation.set(0, 0, 0);
+    });
+  }
 
   // тлеющий уголёк
   puffT = Math.max(0, puffT - dt * .8);
@@ -779,7 +841,7 @@ function frame(){
   emberSprite.material.opacity = Math.min(1, .16 * emberPulse);
 
   // дым
-  const speedBoost = 1 + puffT * 2.4;
+  const speedBoost = 1 + puffT * 2.4 + beatBounce * .5;
   for (let i = 0; i < blobs.length; i++){
     const b = blobs[i], u = b.userData;
     u.t += dt * u.speed * speedBoost;
