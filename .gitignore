@@ -1,0 +1,10 @@
+# временные файлы рендера
+frames/
+frames_test/
+*.browser-profile-*/
+__pycache__/
+*.pyc
+
+# готовое видео не храним в git (см. examples/)
+dist/*.mp4
+dist/*.gif
