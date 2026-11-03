@@ -412,6 +412,11 @@ function glove(sign){
   thumb.rotation.set(.30, 0, sign * .85);
   thumb.castShadow = true;
   g.add(thumb);
+  // кисть мельче — геометрия в отдельной группе, чтобы спичка не масштабировалась
+  const inner = new THREE.Group();
+  inner.scale.setScalar(.72);
+  while (g.children.length) inner.add(g.children[0]);
+  g.add(inner);
   return g;
 }
 
