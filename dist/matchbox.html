@@ -444,6 +444,7 @@ const armPivots = {};
   hand.position.set(wrist[0], wrist[1] - .015, wrist[2]);
   hand.rotation.z = 0;
   hand.rotation.x = -.10;
+  hand.rotation.y = -sign * Math.PI / 2;   // кисть развёрнута внутрь на 90°
   pivot.add(hand);
 
   if (sign > 0) hand.add(heldMatch());    // спичка в правой перчатке
