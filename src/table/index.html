@@ -458,7 +458,7 @@ scene.add(floor);
 
 /* ---------------------------------------------------------------- персонаж */
 const hero = new THREE.Group();
-hero.scale.setScalar(.52);
+hero.scale.setScalar(.26);
 hero.position.set(-.05, 0, .10);
 scene.add(hero);
 
@@ -858,7 +858,7 @@ function frame(){
   if (walkOn){
     const a = path[pathIdx], b = path[(pathIdx + 1) % path.length];
     const d = a.distanceTo(b);
-    pathT += (dt * .26) / d;
+    pathT += (dt * .17) / d;
     if (pathT >= 1){ pathT = 0; pathIdx = (pathIdx + 1) % path.length; }
     const aa = path[pathIdx], bb = path[(pathIdx + 1) % path.length];
     hero.position.x = aa.x + (bb.x - aa.x) * pathT;
