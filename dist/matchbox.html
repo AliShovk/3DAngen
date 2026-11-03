@@ -438,7 +438,7 @@ function heldMatch(){
 const armPivots = {};
 [-1, 1].forEach(function(sign){
   const pivot = new THREE.Group();
-  pivot.position.set(sign * (BW / 2 + .02), 1.46, .20);
+  pivot.position.set(sign * (BW / 2 + .02), 1.30, .20);
   hero.add(pivot);
   const sb = ball(.052, M.limb, 16);
   pivot.add(sb);
