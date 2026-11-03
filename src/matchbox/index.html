@@ -297,7 +297,7 @@ hero.position.y = .06;
 scene.add(hero);
 
 const BW = .92, BH = 1.12, BD = .34, WT = .032;
-const boxY = 1.10;                       // центр коробка
+const boxY = 1.18;                       // центр коробка
 const topY = boxY + BH / 2, botY = boxY - BH / 2;
 
 // полый коробок: 4 стенки + дно (верх открыт — спички стоят внутри)
@@ -453,7 +453,7 @@ function heldMatch(){
 const armPivots = {};
 [-1, 1].forEach(function(sign){
   const pivot = new THREE.Group();
-  pivot.position.set(sign * (BW / 2 + .02), 1.21, .20);
+  pivot.position.set(sign * (BW / 2 + .02), 1.29, .10);
   hero.add(pivot);
   const sb = ball(.052, sign > 0 ? M.headA : M.headC, 16);
   sb.scale.set(1, 1.25, 1);
@@ -480,7 +480,7 @@ const armPivots = {};
 const legParts = {};
 [-1, 1].forEach(function(sign){
   const hip = new THREE.Vector3(sign * .155, botY + .04, .03);
-  const ankle = new THREE.Vector3(sign * .210, .155, .085);
+  const ankle = new THREE.Vector3(sign * .210, .135, .085);
   const s1 = stick(hip.toArray(), ankle.toArray(), .030, M.limb, hero);
   const lh = ball(.046, sign > 0 ? M.headB : M.headA, 16);
   lh.scale.set(1, 1.3, 1);
@@ -571,8 +571,8 @@ rimLight.position.set(-1.2, 2.0, -2.4);
 scene.add(rimLight);
 
 /* ---------------------------------------------------------------- камера */
-const target = new THREE.Vector3(0, 1.34, 0);
-const cam = {az:.44, pol:1.34, rad:4.05, taz:.44, tpol:1.34, trad:4.05};
+const target = new THREE.Vector3(0, 1.41, 0);
+const cam = {az:.44, pol:1.34, rad:4.15, taz:.44, tpol:1.34, trad:4.15};
 let spin = false, walkOn = true, armDeg = 17;
 let dragging = false, lastX = 0, lastY = 0, moved = 0, lastInteract = performance.now();
 
