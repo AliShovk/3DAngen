@@ -678,16 +678,16 @@ function frame(){
     legPivots.R.rotation.z = .06;
     armPivots.R.rotation.x = Math.sin(stepPhase + Math.PI) * .16;
     armPivots.L.rotation.x = Math.sin(stepPhase) * .16;
-    armPivots.R.rotation.z = 1.34;
-    armPivots.L.rotation.z = -1.34;
+    armPivots.R.rotation.z = .82;
+    armPivots.L.rotation.z = -.82;
   } else {
     legPivots.L.rotation.x += (0 - legPivots.L.rotation.x) * ck;
     legPivots.R.rotation.x += (0 - legPivots.R.rotation.x) * ck;
     ['L', 'R'].forEach(function(k){
       armPivots[k].rotation.x += (0 - armPivots[k].rotation.x) * ck;
     });
-    armPivots.R.rotation.z = 1.34;
-    armPivots.L.rotation.z = -1.34;
+    armPivots.R.rotation.z = .82;
+    armPivots.L.rotation.z = -.82;
   }
 
   // «жест» по клику: машем перчаткой
