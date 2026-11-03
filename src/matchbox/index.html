@@ -355,11 +355,11 @@ bodyBox.add(matchGroup);
 
 const heads = [M.headA, M.headB, M.headC, M.headD];
 const matches = [];
-for (let i = 0; i < 9; i++){
+for (let i = 0; i < 18; i++){
   const g = new THREE.Group();
-  const row = Math.floor(i / 3), col = i % 3;
-  const x = (col - 1) * .235 + (row === 1 ? .115 : row === 2 ? -.10 : 0);
-  const z = (row - 1) * .135;
+  const row = Math.floor(i / 6), col = i % 6;
+  const x = (col - 2.5) * .138 + (row === 1 ? .05 : 0);
+  const z = (row - 1) * .132;
   const h = 1.26 + Math.random() * .22;
   const stem = cyl(.016, .016, h, M.stem, 10);
   stem.position.y = h / 2;
