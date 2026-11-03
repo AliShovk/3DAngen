@@ -57,13 +57,22 @@ async def main(args):
             await call("Runtime.enable")
             await call("Emulation.setDeviceMetricsOverride",
                        {"width": args.w, "height": args.h, "deviceScaleFactor": 1, "mobile": False})
-            await call("Page.navigate", {"url": file.as_uri() + "?film=1"})
+            await call("Page.navigate", {"url": file.as_uri() + "?" + args.query})
             await asyncio.sleep(2.5)
 
             r = await call("Runtime.evaluate", {"expression": "typeof window.__seek", "returnByValue": True})
             if r["result"]["result"].get("value") != "function":
                 print("нет __seek — сцена не в режиме фильма")
                 return 1
+
+            if args.times:
+                times = [float(x) for x in args.times.split(",")]
+                for i, tt in enumerate(times):
+                    await call("Runtime.evaluate", {"expression": "window.__seek(%.3f)" % tt, "returnByValue": True})
+                    shot = await call("Page.captureScreenshot", {"format": "png"})
+                    (out / ("t_%02d_%.1f.png" % (i, tt))).write_bytes(base64.b64decode(shot["result"]["data"]))
+                    print("t=", tt)
+                return 0
 
             t0 = time.time()
             for i in range(args.frames):
@@ -87,4 +96,6 @@ if __name__ == "__main__":
     ap.add_argument("--w", type=int, default=1280)
     ap.add_argument("--h", type=int, default=720)
     ap.add_argument("--out", default=str(Path(r"C:\Users\Ali PC\AppData\Local\Temp\3dangen\film")))
+    ap.add_argument("--query", default="film=1")
+    ap.add_argument("--times", default="")
     raise SystemExit(asyncio.run(main(ap.parse_args())))
