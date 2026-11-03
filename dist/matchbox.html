@@ -395,7 +395,7 @@ for (let i = 0; i < 18; i++){
   g.position.set(x, botY + .06, z);
   g.rotation.z = (Math.random() - .5) * .10;
   g.rotation.x = (Math.random() - .5) * .08;
-  g.userData = {phase:Math.random() * 6.28, base:g.rotation.z};
+  g.userData = {phase:Math.random() * 6.28, base:g.rotation.z, x:x, z:z, h:h + .07};
   matchGroup.add(g);
   matches.push(g);
 }
@@ -734,10 +734,17 @@ function frame(){
   }
 
   // спички покачиваются
+  // наклон ограничен так, чтобы головки не выходили за стенки коробка
+  const halfW = (BW - WT * 2.4) / 2, halfD = (BD - WT * 2.4) / 2;
+  const amp = .03 + (walkOn ? Math.abs(s) * .05 : 0);
   for (let i = 0; i < matches.length; i++){
     const m = matches[i], u = m.userData;
-    m.rotation.z = u.base + Math.sin(time * 2.2 + u.phase) * (.03 + (walkOn ? Math.abs(s) * .05 : 0));
-    m.rotation.x = Math.sin(time * 1.7 + u.phase) * .03;
+    const limZ = Math.max(.012, Math.atan2(Math.max(.015, halfW - Math.abs(u.x) - .030), u.h));
+    const limX = Math.max(.012, Math.atan2(Math.max(.015, halfD - Math.abs(u.z) - .030), u.h));
+    const tz = Math.sin(time * 2.2 + u.phase) * amp;
+    const tx = Math.sin(time * 1.7 + u.phase) * .03;
+    m.rotation.z = Math.max(-limZ, Math.min(limZ, u.base + tz));
+    m.rotation.x = Math.max(-limX, Math.min(limX, tx));
   }
 
   renderer.render(scene, camera);
