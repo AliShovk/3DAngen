@@ -50,6 +50,7 @@
   .dots i:hover{transform:scale(1.12)}
   .rng{display:flex;align-items:center;gap:7px;font-size:11.5px;opacity:.75;padding:0 8px 0 4px}
   .rng input{width:88px;accent-color:#f0a04b;cursor:pointer}
+  .bar button.face{font-size:15px;padding:8px 9px;line-height:1}
 
   .hint{position:fixed;left:0;right:0;bottom:84px;text-align:center;font-size:11.5px;letter-spacing:.05em;
     opacity:.5;pointer-events:none;opacity:0;animation:rise .9s .6s ease forwards}
@@ -86,6 +87,11 @@
   <button data-act="spin">Авто-вращение</button>
   <span class="sep"></span>
   <label class="rng" title="Угол рук">Руки<input id="armA" type="range" min="-15" max="120" value="17" step="1"></label>
+  <span class="sep"></span>
+  <button class="face on" data-face="joy" title="Радость">🙂</button>
+  <button class="face" data-face="surprise" title="Удивление">😮</button>
+  <button class="face" data-face="anger" title="Злость">😠</button>
+  <button class="face" data-face="sadness" title="Печаль">😢</button>
   <span class="sep"></span>
   <div class="dots">
     <i data-bg="cream" style="background:linear-gradient(135deg,#f8efd9,#f6e7e0)"></i>
@@ -187,9 +193,15 @@ function softShadowTex(){
 }
 
 /* ---------------------------------------------------------------- текстуры */
-/* этикетка на передней грани: пастель + лицо */
-function labelTexture(){
-  const {c, g} = cv(1024, 1024);
+/* этикетка на передней грани: пастель + лицо с эмоциями */
+const labelCanvas = cv(1024, 1024);
+const labelTex = new THREE.CanvasTexture(labelCanvas.c);
+labelTex.colorSpace = THREE.SRGBColorSpace;
+labelTex.anisotropy = 8;
+
+function drawLabel(mode){
+  const g = labelCanvas.g;
+  g.clearRect(0, 0, 1024, 1024);
   g.fillStyle = '#f7efdc'; g.fillRect(0, 0, 1024, 1024);
 
   // пастельные арки
@@ -201,46 +213,123 @@ function labelTexture(){
     {x: 500, y: 60,  r: 120, col:'#7fe0d8'},
     {x: 210, y: 980, r: 130, col:'#ffb37a'}
   ];
+  g.fillStyle = '#f7efdc';
   arcs.forEach(function(a){
     g.fillStyle = a.col;
     g.beginPath(); g.arc(a.x, a.y, a.r, 0, Math.PI * 2); g.fill();
   });
 
-  // рамка-этикетка
-  g.strokeStyle = '#2a1f1a'; g.lineWidth = 26; g.strokeRect(34, 34, 956, 956);
+  // рамка
+  g.strokeStyle = '#1d1512'; g.lineWidth = 26; g.strokeRect(34, 34, 956, 956);
   g.strokeStyle = '#f7efdc'; g.lineWidth = 12; g.strokeRect(62, 62, 900, 900);
 
-  // лицо
   const eyeY = 430, eyeDX = 200;
-  [-1, 1].forEach(function(s){
-    const cx = 512 + s * eyeDX;
+  const surprise = mode === 'surprise';
+
+  // глаза
+  [-1, 1].forEach(function(s2){
+    const cx = 512 + s2 * eyeDX;
     g.fillStyle = '#ffffff';
-    g.strokeStyle = '#2a1f1a'; g.lineWidth = 18;
-    g.beginPath(); g.ellipse(cx, eyeY, 132, 168, 0, 0, Math.PI * 2); g.fill(); g.stroke();
-    // зрачок
-    g.fillStyle = '#2a1f1a';
-    g.beginPath(); g.ellipse(cx + s * 8, eyeY + 26, 74, 96, 0, 0, Math.PI * 2); g.fill();
-    // блик
+    g.strokeStyle = '#1d1512'; g.lineWidth = 18;
+    g.beginPath(); g.ellipse(cx, eyeY, surprise ? 126 : 132, surprise ? 176 : 168, 0, 0, Math.PI * 2);
+    g.fill(); g.stroke();
+    g.fillStyle = '#1d1512';
+    const pr = surprise ? 52 : 74, ph = surprise ? 62 : 96;
+    g.beginPath(); g.ellipse(cx + s2 * 8, eyeY + (surprise ? 8 : 26), pr, ph, 0, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#ffffff';
-    g.beginPath(); g.ellipse(cx + s * 8 - 22, eyeY - 6, 26, 34, -.4, 0, Math.PI * 2); g.fill();
-    // бровь
-    g.strokeStyle = '#2a1f1a'; g.lineWidth = 16;
-    g.beginPath(); g.arc(cx, eyeY - 150, 96, Math.PI * 1.15, Math.PI * 1.85); g.stroke();
+    g.beginPath(); g.ellipse(cx + s2 * 8 - 22, eyeY - (surprise ? 16 : 6), 26, 34, -.4, 0, Math.PI * 2); g.fill();
+    // опущенное верхнее веко для печали
+    if (mode === 'sadness'){
+      g.strokeStyle = '#1d1512'; g.lineWidth = 26;
+      g.beginPath(); g.arc(cx, eyeY - 34, 128, Math.PI * 1.04, Math.PI * 1.96); g.stroke();
+    }
   });
 
-  // улыбка
-  g.strokeStyle = '#2a1f1a'; g.lineWidth = 20; g.lineCap = 'round';
-  g.beginPath(); g.arc(512, 700, 120, Math.PI * .18, Math.PI * .82); g.stroke();
+  // брови
+  g.strokeStyle = '#1d1512'; g.lineCap = 'round';
+  [-1, 1].forEach(function(s2){
+    const cx = 512 + s2 * eyeDX;
+    g.lineWidth = 17;
+    g.beginPath();
+    if (mode === 'joy'){
+      g.arc(cx, eyeY - 150, 96, Math.PI * 1.12, Math.PI * 1.88);
+    } else if (mode === 'surprise'){
+      g.arc(cx, eyeY - 168, 104, Math.PI * 1.18, Math.PI * 1.82);
+    } else if (mode === 'anger'){
+      const y0 = eyeY - 196, y1 = eyeY - 168;
+      g.moveTo(cx - s2 * 104, y0);
+      g.lineTo(cx + s2 * 96, y1);
+    } else {                        // печаль — внутренние концы вверх
+      const y0 = eyeY - 168, y1 = eyeY - 196;
+      g.moveTo(cx - s2 * 104, y0);
+      g.lineTo(cx + s2 * 96, y1);
+    }
+    g.stroke();
+  });
+
+  if (mode === 'anger'){
+    g.strokeStyle = '#1d1512'; g.lineWidth = 12;
+    [-1, 1].forEach(function(s2){
+      g.beginPath(); g.moveTo(512 + s2 * 26, 244); g.lineTo(512 + s2 * 44, 300); g.stroke();
+    });
+  }
+
+  // рот
+  g.strokeStyle = '#1d1512'; g.fillStyle = '#1d1512'; g.lineWidth = 20; g.lineCap = 'round';
+  if (mode === 'joy'){
+    // широкий открытый смех: тёмная полуэллипсная пасть + верхний ряд зубов
+    g.beginPath(); g.ellipse(512, 686, 132, 104, 0, 0, Math.PI); g.fill();
+    g.fillStyle = '#ffffff';
+    g.beginPath(); g.ellipse(512, 686, 132, 34, 0, 0, Math.PI); g.fill();
+    g.fillStyle = '#1d1512';
+    g.lineWidth = 8;
+    for (let i = 1; i < 4; i++){
+      g.beginPath(); g.moveTo(512 - 132 + i * 66, 686); g.lineTo(512 - 132 + i * 66, 716); g.stroke();
+    }
+    g.beginPath(); g.ellipse(512, 686, 132, 104, 0, 0, Math.PI); g.stroke();
+  } else if (mode === 'surprise'){
+    g.beginPath(); g.ellipse(512, 752, 58, 76, 0, 0, Math.PI * 2); g.fill();
+  } else if (mode === 'anger'){
+    // оскал: приоткрытый рот с зубами
+    g.beginPath();
+    g.moveTo(414, 712);
+    g.quadraticCurveTo(512, 690, 610, 712);
+    g.quadraticCurveTo(600, 806, 512, 812);
+    g.quadraticCurveTo(424, 806, 414, 712);
+    g.closePath(); g.fill();
+    g.fillStyle = '#ffffff';
+    for (let i = 0; i < 4; i++){
+      g.beginPath();
+      const bx = 430 + i * 44;
+      g.moveTo(bx, 706); g.lineTo(bx + 36, 706); g.lineTo(bx + 32, 748); g.lineTo(bx + 4, 748);
+      g.closePath(); g.fill();
+    }
+    g.strokeStyle = '#1d1512'; g.lineWidth = 8;
+    g.beginPath(); g.moveTo(414, 712); g.quadraticCurveTo(512, 690, 610, 712); g.stroke();
+  } else {                          // печаль
+    g.beginPath(); g.arc(512, 786, 104, Math.PI * 1.20, Math.PI * 1.80); g.stroke();
+  }
+
   // румянец
   g.fillStyle = 'rgba(242,160,181,.55)';
-  [-1, 1].forEach(function(s){
-    g.beginPath(); g.ellipse(512 + s * 250, 720, 62, 40, 0, 0, Math.PI * 2); g.fill();
+  [-1, 1].forEach(function(s2){
+    g.beginPath(); g.ellipse(512 + s2 * 250, 720, 62, 40, 0, 0, Math.PI * 2); g.fill();
   });
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 8;
-  return t;
+
+  // слеза для печали
+  if (mode === 'sadness'){
+    g.fillStyle = '#63b8e8';
+    g.beginPath();
+    g.moveTo(322, 520);
+    g.bezierCurveTo(322, 520, 350, 570, 350, 592);
+    g.bezierCurveTo(350, 612, 330, 620, 316, 608);
+    g.bezierCurveTo(300, 596, 322, 548, 322, 520);
+    g.fill();
+  }
+
+  labelTex.needsUpdate = true;
 }
+drawLabel('joy');
 
 /* боковая тёрка */
 function strikerTexture(){
@@ -271,7 +360,7 @@ const M = {
   boxSide: toon(0x4a2f1c),
   boxEdge: toon(0x8d5c2e),
   inner:  toon(0x16302f),
-  label:  toon(0xffffff, {map:labelTexture()}),
+  label:  toon(0xffffff, {map:labelTex}),
   striker: new THREE.MeshBasicMaterial({map:strikerTexture()}),
   stem:   toon(0xf7e6bd),
   headA:  toon(0xff5a1f),
@@ -625,6 +714,10 @@ document.querySelector('.bar').addEventListener('click', function(e){
   if (!b) return;
   if (b.dataset.act === 'walk'){ walkOn = !walkOn; b.classList.toggle('on', walkOn); }
   if (b.dataset.act === 'spin'){ spin = !spin; b.classList.toggle('on', spin); }
+  if (b.dataset.face){
+    drawLabel(b.dataset.face);
+    document.querySelectorAll('.face').forEach(function(x){ x.classList.toggle('on', x === b); });
+  }
   lastInteract = performance.now();
 });
 
@@ -744,7 +837,7 @@ function frame(){
   requestAnimationFrame(frame);
 }
 
-window.__dbg = {scene:scene, THREE:THREE};
+window.__dbg = {scene:scene, THREE:THREE, drawLabel:drawLabel};
 setBg('cream');
 applyCamera();
 requestAnimationFrame(frame);
