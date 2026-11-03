@@ -84,6 +84,7 @@
 
 <div class="bar">
   <button data-act="walk" class="on">Шаг</button>
+  <button data-act="strike">Зажечь</button>
   <button data-act="spin">Авто-вращение</button>
   <span class="sep"></span>
   <label class="rng" title="Угол рук">Руки<input id="armA" type="range" min="-15" max="120" value="17" step="1"></label>
@@ -360,6 +361,18 @@ function strikerTexture(){
   return t;
 }
 
+function glowTexture(){
+  const {c, g} = cv(128, 128);
+  const grd = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  grd.addColorStop(0, 'rgba(255,255,235,1)');
+  grd.addColorStop(.35, 'rgba(255,205,120,.85)');
+  grd.addColorStop(1, 'rgba(255,150,40,0)');
+  g.fillStyle = grd; g.fillRect(0, 0, 128, 128);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
 /* ---------------------------------------------------------------- материалы */
 const M = {
   box:    toon(0xfffaea),
@@ -539,12 +552,40 @@ function heldMatch(){
   head.position.y = .392;
   head.scale.set(1, 1.25, 1);
   g.add(head);
-  g.rotation.z = -Math.PI / 2 - .10;  // спичка развёрнута вперёд на 90° (в кадр)
-  g.rotation.x = -.30;                // лёгкий наклон вниз, чтобы древко читалось
+
+  // пламя
+  const flame = new THREE.Group();
+  const outerMat = new THREE.MeshBasicMaterial({color:0xff5a0d, transparent:true, opacity:.95, depthWrite:false, side:THREE.DoubleSide});
+  const coreMat = new THREE.MeshBasicMaterial({color:0xffd93a, transparent:true, opacity:1, depthWrite:false, side:THREE.DoubleSide});
+  const outerCone = new THREE.Mesh(new THREE.ConeGeometry(.105, .46, 16, 1, true), outerMat);
+  outerCone.position.y = .20;
+  const coreCone = new THREE.Mesh(new THREE.ConeGeometry(.050, .27, 12, 1, true), coreMat);
+  coreCone.position.y = .13;
+  const baseCone = new THREE.Mesh(new THREE.ConeGeometry(.070, .13, 12, 1, true), new THREE.MeshBasicMaterial({color:0xffa020, depthWrite:false, side:THREE.DoubleSide}));
+  baseCone.position.y = .06;
+  flame.add(baseCone, outerCone, coreCone);
+  flame.position.y = .455;
+  flame.visible = false;
+  g.add(flame);
+
+  const light = new THREE.PointLight(0xffa040, 0, 1.3);
+  light.position.y = .46;
+  g.add(light);
+
+  const flash = new THREE.Sprite(new THREE.SpriteMaterial({map:glowTexture(), transparent:true, blending:THREE.AdditiveBlending, depthWrite:false, opacity:0}));
+  flash.position.y = .44;
+  flash.scale.setScalar(.001);
+  flash.visible = false;
+  g.add(flash);
+
+  g.userData = {flame:flame, light:light, flash:flash};
+  g.rotation.z = -.95;                // вперёд-вверх: и древко видно, и пламя поднимается
+  g.rotation.x = -.18;
   g.position.set(-.020, -.020, .052);   // древко между пальцами и ладонью
   return g;
 }
 
+let heldRef = null;
 const armPivots = {};
 [-1, 1].forEach(function(sign){
   const pivot = new THREE.Group();
@@ -567,7 +608,7 @@ const armPivots = {};
   hand.rotation.y = -sign * Math.PI / 2;   // кисть развёрнута внутрь на 90°
   pivot.add(hand);
 
-  if (sign > 0) hand.add(heldMatch());    // спичка в правой перчатке
+  if (sign > 0){ heldRef = heldMatch(); hand.add(heldRef); }    // спичка в правой перчатке
   armPivots[sign > 0 ? 'R' : 'L'] = pivot;
 });
 
@@ -669,6 +710,7 @@ scene.add(rimLight);
 const target = new THREE.Vector3(0, 1.41, 0);
 const cam = {az:.44, pol:1.34, rad:4.15, taz:.44, tpol:1.34, trad:4.15};
 let spin = false, walkOn = true, armDeg = 17;
+let strikeT = -1, lit = false, litT = 0, flashT = 0;
 let dragging = false, lastX = 0, lastY = 0, moved = 0, lastInteract = performance.now();
 
 function applyCamera(){
@@ -699,7 +741,7 @@ canvas.addEventListener('pointermove', function(e){
 canvas.addEventListener('pointerup', function(){
   dragging = false;
   canvas.classList.remove('dragging');
-  if (moved < 8) wave();
+  if (moved < 8) strike();
   lastInteract = performance.now();
 });
 canvas.addEventListener('pointercancel', function(){ dragging = false; canvas.classList.remove('dragging'); });
@@ -712,6 +754,10 @@ canvas.addEventListener('wheel', function(e){
 /* ---------------------------------------------------------------- UI */
 let waveT = 0;
 function wave(){ waveT = 1; }
+function strike(){
+  if (lit){ lit = false; litT = 0; return; }   // повторный клик — задуть
+  if (strikeT < 0) strikeT = 0;
+}
 
 document.querySelector('.bar').addEventListener('click', function(e){
   const b = e.target.closest('button');
@@ -720,6 +766,7 @@ document.querySelector('.bar').addEventListener('click', function(e){
   if (!b) return;
   if (b.dataset.act === 'walk'){ walkOn = !walkOn; b.classList.toggle('on', walkOn); }
   if (b.dataset.act === 'spin'){ spin = !spin; b.classList.toggle('on', spin); }
+  if (b.dataset.act === 'strike') strike();
   if (b.dataset.face){
     drawLabel(b.dataset.face);
     document.querySelectorAll('.face').forEach(function(x){ x.classList.toggle('on', x === b); });
@@ -754,9 +801,11 @@ if (armA) armA.addEventListener('input', function(){ armDeg = +armA.value; });
 
 addEventListener('keydown', function(e){
   const k = e.key.toLowerCase();
+  if (k === 'f') strike();
   if (k === 'w'){ walkOn = !walkOn; document.querySelector('[data-act=walk]').classList.toggle('on', walkOn); }
   if (k === 'r'){ spin = !spin; document.querySelector('[data-act=spin]').classList.toggle('on', spin); }
   if (k === ' ') wave();
+  if (k === 'f') strike();
 });
 
 /* ---------------------------------------------------------------- resize */
@@ -815,6 +864,61 @@ function frame(){
     });
     armPivots.R.rotation.z = armDeg * Math.PI / 180;
     armPivots.L.rotation.z = -armDeg * Math.PI / 180;
+  }
+
+  // чирканье спички об собственный бок
+  if (strikeT >= 0){
+    strikeT += dt;
+    const p2 = strikeT;
+    const restZ = armDeg * Math.PI / 180;
+    let rz = restZ, rx = 0;
+    if (p2 < .30){                       // замах: поднимаем и отводим
+      const k = p2 / .30;
+      rz = restZ + k * .18;
+      rx = -k * .62;
+    } else if (p2 < .52){                // резкое движение вдоль тёрки, к боку коробка
+      const k = (p2 - .30) / .22;
+      rz = restZ + .18 - k * (.18 + .55);
+      rx = -.62 + k * 1.05;
+    } else if (p2 < 1.10){               // возврат
+      const k = (p2 - .52) / .58;
+      rz = restZ - .55 + k * .55;
+      rx = .43 * (1 - k);
+    } else {
+      strikeT = -1;
+      rz = restZ;
+      rx = 0;
+    }
+    armPivots.R.rotation.z = rz;
+    armPivots.R.rotation.x = rx;
+    if (p2 >= .50 && p2 < .56 && !lit && flashT <= 0){
+      lit = true; litT = 0; flashT = .30;   // искра и поджиг
+    }
+  }
+
+  // пламя / искра
+  if (heldRef && heldRef.userData){
+    const u = heldRef.userData;
+    if (lit){
+      litT += dt;
+      const grow = Math.min(1, litT * 5);
+      u.flame.visible = true;
+      const flick = 1 + Math.sin(time * 26) * .07 + Math.sin(time * 41 + 1.3) * .045;
+      u.flame.scale.set(grow * (.92 + Math.sin(time * 13) * .06), grow * flick, grow * (.92 + Math.cos(time * 17) * .06));
+      u.flame.rotation.y = Math.sin(time * 9) * .25;
+      u.light.intensity = (1.1 + Math.sin(time * 24) * .25) * grow;
+    } else {
+      u.flame.visible = false;
+      u.light.intensity = 0;
+    }
+    if (flashT > 0){
+      flashT -= dt;
+      u.flash.visible = true;
+      u.flash.scale.setScalar(.10 + (.30 - flashT) * 1.5);
+      u.flash.material.opacity = Math.max(0, flashT / .30);
+    } else {
+      u.flash.visible = false;
+    }
   }
 
   // «жест» по клику: машем перчаткой
