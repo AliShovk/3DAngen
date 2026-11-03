@@ -48,6 +48,8 @@
   .dots i{width:22px;height:22px;border-radius:50%;cursor:pointer;display:block;
     border:2px solid rgba(255,255,255,.85);box-shadow:0 1px 4px rgba(80,50,30,.28);transition:transform .15s ease}
   .dots i:hover{transform:scale(1.12)}
+  .rng{display:flex;align-items:center;gap:7px;font-size:11.5px;opacity:.75;padding:0 8px 0 4px}
+  .rng input{width:88px;accent-color:#f0a04b;cursor:pointer}
 
   .hint{position:fixed;left:0;right:0;bottom:84px;text-align:center;font-size:11.5px;letter-spacing:.05em;
     opacity:.5;pointer-events:none;opacity:0;animation:rise .9s .6s ease forwards}
@@ -82,6 +84,8 @@
 <div class="bar">
   <button data-act="walk" class="on">Шаг</button>
   <button data-act="spin">Авто-вращение</button>
+  <span class="sep"></span>
+  <label class="rng" title="Угол рук">Руки<input id="armA" type="range" min="-15" max="120" value="17" step="1"></label>
   <span class="sep"></span>
   <div class="dots">
     <i data-bg="cream" style="background:linear-gradient(135deg,#f8efd9,#f6e7e0)"></i>
@@ -541,7 +545,7 @@ scene.add(rimLight);
 /* ---------------------------------------------------------------- камера */
 const target = new THREE.Vector3(0, 1.14, 0);
 const cam = {az:.44, pol:1.34, rad:3.60, taz:.44, tpol:1.34, trad:3.60};
-let spin = false, walkOn = true;
+let spin = false, walkOn = true, armDeg = 17;
 let dragging = false, lastX = 0, lastY = 0, moved = 0, lastInteract = performance.now();
 
 function applyCamera(){
@@ -618,6 +622,9 @@ function setBg(name){
   document.querySelectorAll('.bar button').forEach(function(x){ x.style.color = night ? '#f6ecff' : ''; });
 }
 
+const armA = document.getElementById('armA');
+if (armA) armA.addEventListener('input', function(){ armDeg = +armA.value; });
+
 addEventListener('keydown', function(e){
   const k = e.key.toLowerCase();
   if (k === 'w'){ walkOn = !walkOn; document.querySelector('[data-act=walk]').classList.toggle('on', walkOn); }
@@ -671,16 +678,16 @@ function frame(){
     legPivots.R.rotation.z = .06;
     armPivots.R.rotation.x = Math.sin(stepPhase + Math.PI) * .16;
     armPivots.L.rotation.x = Math.sin(stepPhase) * .16;
-    armPivots.R.rotation.z = .30;
-    armPivots.L.rotation.z = -.30;
+    armPivots.R.rotation.z = armDeg * Math.PI / 180;
+    armPivots.L.rotation.z = -armDeg * Math.PI / 180;
   } else {
     legPivots.L.rotation.x += (0 - legPivots.L.rotation.x) * ck;
     legPivots.R.rotation.x += (0 - legPivots.R.rotation.x) * ck;
     ['L', 'R'].forEach(function(k){
       armPivots[k].rotation.x += (0 - armPivots[k].rotation.x) * ck;
     });
-    armPivots.R.rotation.z = .30;
-    armPivots.L.rotation.z = -.30;
+    armPivots.R.rotation.z = armDeg * Math.PI / 180;
+    armPivots.L.rotation.z = -armDeg * Math.PI / 180;
   }
 
   // «жест» по клику: машем перчаткой
