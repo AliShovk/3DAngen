@@ -249,23 +249,23 @@ function strikerTexture(){
 
 /* ---------------------------------------------------------------- материалы */
 const M = {
-  wood:    toon(0xffffff, {map: woodTexture()}),
+  wood:    new THREE.MeshStandardMaterial({map: woodTableTex(), roughness:.55, metalness:0}),
   woodEdge:toon(0x8a5a2b),
   floor:   toon(0xece0cd),
   cloth:   toon(0xffffff),
-  porcelain: toon(0xfefaf2),
-  bread:   toon(0xdca85f),
-  breadIn: toon(0xf3dcae),
-  cheese:  toon(0xffc23c),
-  tomato:  toon(0xe5432f),
-  lettuce: toon(0x64c04a),
-  apple:   toon(0xe23434),
-  orange:  toon(0xff9a1f),
-  leaf:    toon(0x3f9d3a),
-  mug:     toon(0x4a7fd4),
-  coffee:  toon(0x4a2a16),
-  steel:   toon(0xc9d2da),
-  bowl:    toon(0x6ec1e6),
+  porcelain: new THREE.MeshStandardMaterial({color:0xfdfbf6, roughness:.14, metalness:0}),
+  bread:   new THREE.MeshStandardMaterial({map: breadTex(), roughness:.85, metalness:0}),
+  breadIn: new THREE.MeshStandardMaterial({map: breadInTex(), roughness:.9, metalness:0}),
+  cheese:  new THREE.MeshStandardMaterial({map: cheeseTex(), roughness:.45, metalness:0}),
+  tomato:  new THREE.MeshStandardMaterial({color:0xd2352a, roughness:.24, metalness:0}),
+  lettuce: new THREE.MeshStandardMaterial({color:0x63c247, roughness:.7, metalness:0}),
+  apple:   new THREE.MeshStandardMaterial({color:0xc21f26, roughness:.18, metalness:0}),
+  orange:  new THREE.MeshStandardMaterial({map: orangeTex(), roughness:.5, metalness:0}),
+  leaf:    new THREE.MeshStandardMaterial({color:0x3f9d3a, roughness:.55, metalness:0}),
+  mug:     new THREE.MeshStandardMaterial({color:0x2f6fb5, roughness:.16, metalness:0}),
+  coffee:  new THREE.MeshStandardMaterial({map: coffeeTex(), roughness:.32, metalness:0}),
+  steel:   new THREE.MeshStandardMaterial({color:0xd9e0e6, roughness:.16, metalness:.95}),
+  bowl:    new THREE.MeshStandardMaterial({color:0x5aa9d6, roughness:.18, metalness:0}),
   boxSide: toon(0x4a2f1c),
   boxEdge: toon(0x8d5c2e),
   box:     toon(0xfffaea),
@@ -413,6 +413,76 @@ function envTexture(){
   return t;
 }
 
+/* ---------------------------------------------------------------- текстуры еды */
+function breadTex(){
+  const {c, g} = cv(512, 512);
+  const _rep = 6;
+  g.fillStyle = '#d9a35c'; g.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 420; i++){
+    g.fillStyle = 'rgba(' + (120 + Math.random() * 60 | 0) + ',' + (78 + Math.random() * 40 | 0) + ',' + (34 + Math.random() * 26 | 0) + ',' + (.12 + Math.random() * .35) + ')';
+    g.beginPath();
+    g.ellipse(Math.random() * 512, Math.random() * 512, 4 + Math.random() * 12, 3 + Math.random() * 9, Math.random() * 3, 0, Math.PI * 2);
+    g.fill();
+  }
+  for (let i = 0; i < 90; i++){
+    g.fillStyle = 'rgba(255,246,224,' + (.1 + Math.random() * .25) + ')';
+    g.beginPath(); g.ellipse(Math.random() * 512, Math.random() * 512, 9 + Math.random() * 22, 6 + Math.random() * 14, 0, 0, Math.PI * 2); g.fill();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(_rep, _rep);
+  return t;
+}
+function breadInTex(){
+  const {c, g} = cv(512, 512);
+  g.fillStyle = '#f4e2bb'; g.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 320; i++){
+    g.fillStyle = 'rgba(214,186,140,' + (.15 + Math.random() * .4) + ')';
+    g.beginPath(); g.ellipse(Math.random() * 512, Math.random() * 512, 3 + Math.random() * 11, 3 + Math.random() * 9, 0, 0, Math.PI * 2); g.fill();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(6, 6);
+  return t;
+}
+function cheeseTex(){
+  const {c, g} = cv(512, 512);
+  g.fillStyle = '#ffc63d'; g.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 26; i++){
+    g.fillStyle = 'rgba(226,158,30,.55)';
+    g.beginPath(); g.ellipse(Math.random() * 512, Math.random() * 512, 20 + Math.random() * 44, 16 + Math.random() * 34, Math.random() * 3, 0, Math.PI * 2); g.fill();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(5, 5);
+  return t;
+}
+function orangeTex(){
+  const {c, g} = cv(512, 512);
+  g.fillStyle = '#f79516'; g.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 2600; i++){
+    g.fillStyle = 'rgba(' + (200 + Math.random() * 45 | 0) + ',' + (120 + Math.random() * 50 | 0) + ',20,' + (.1 + Math.random() * .3) + ')';
+    g.beginPath(); g.arc(Math.random() * 512, Math.random() * 512, 7 + Math.random() * 12, 0, Math.PI * 2); g.fill();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+function coffeeTex(){
+  const {c, g} = cv(256, 256);
+  g.fillStyle = '#3a1f10'; g.fillRect(0, 0, 256, 256);
+  const grd = g.createRadialGradient(120, 110, 20, 128, 128, 130);
+  grd.addColorStop(0, 'rgba(150,96,52,.55)');
+  grd.addColorStop(1, 'rgba(150,96,52,0)');
+  g.fillStyle = grd; g.fillRect(0, 0, 256, 256);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
 /* ---------------------------------------------------------------- материалы окружения (реализм) */
 const R = {
   tableTop:  new THREE.MeshStandardMaterial({map: woodTableTex(), roughness:.38, metalness:0.02}),
@@ -431,9 +501,10 @@ const R = {
   lamp:      new THREE.MeshStandardMaterial({color:0x2b3a3a, roughness:.35, metalness:.7})
 };
 Object.keys(R).forEach(function(k){ if (R[k].isMeshStandardMaterial) R[k].envMapIntensity = .75; });
+Object.keys(M).forEach(function(k){ if (M[k] && M[k].isMeshStandardMaterial) M[k].envMapIntensity = .8; });
 
 /* ---------------------------------------------------------------- стол */
-const TABLE = {w: 3.4, d: 2.3, t: .09, h: 1.02};
+const TABLE = {w: 3.9, d: 2.55, t: .10, h: 1.02};
 const tableTop = 0;
 
 const table = new THREE.Group();
@@ -1016,8 +1087,8 @@ rimL.position.set(-1.4, 2.4, -3);
 scene.add(rimL);
 
 /* ---------------------------------------------------------------- камера */
-const target = new THREE.Vector3(0, .78, 0);
-const cam = {az:.34, pol:1.30, rad:7.6, taz:.34, tpol:1.30, trad:7.6};
+const target = new THREE.Vector3(0, .52, 0);
+const cam = {az:.36, pol:1.27, rad:7.1, taz:.36, tpol:1.27, trad:7.1};
 let spin = false, walkOn = true;
 let dragging = false, lastX = 0, lastY = 0, moved = 0;
 
