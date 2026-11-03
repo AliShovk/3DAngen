@@ -406,17 +406,20 @@ function glove(sign){
 
 function heldMatch(){
   const g = new THREE.Group();
-  const stem = cyl(.016, .016, .40, M.stemHeld, 10);
+  g.name = 'heldMatch';
+  const stem = cyl(.021, .021, .40, M.stemHeld, 12);
   stem.position.y = .145;
   g.add(stem);
   const neck = cyl(.018, .024, .045, M.stem, 10);
   neck.position.y = .345;
   g.add(neck);
   const head = ball(.056, M.headHeld, 16);
+  head.name = 'heldHead';
   head.position.y = .392;
   head.scale.set(1, 1.25, 1);
   g.add(head);
-  g.rotation.z = -.14;                // спичка стоит в кулаке почти вертикально
+  g.rotation.z = -Math.PI / 2 - .10;  // спичка развёрнута вперёд на 90° (в кадр)
+  g.rotation.x = -.30;                // лёгкий наклон вниз, чтобы древко читалось
   g.position.set(-.020, -.020, .052);   // древко между пальцами и ладонью
   return g;
 }
@@ -434,6 +437,7 @@ const armPivots = {};
   stick(elbow, wrist, .023, M.limb, pivot);
 
   const hand = glove(sign);
+  hand.name = sign > 0 ? 'handR' : 'handL';
   hand.position.set(wrist[0], wrist[1] - .015, wrist[2]);
   hand.rotation.z = 0;
   hand.rotation.x = -.10;
@@ -667,14 +671,16 @@ function frame(){
     legPivots.R.rotation.z = .06;
     armPivots.R.rotation.x = Math.sin(stepPhase + Math.PI) * .34;
     armPivots.L.rotation.x = Math.sin(stepPhase) * .34;
-    armPivots.R.rotation.z = -.10;
-    armPivots.L.rotation.z = .10;
+    armPivots.R.rotation.z = -.34;
+    armPivots.L.rotation.z = .34;
   } else {
     legPivots.L.rotation.x += (0 - legPivots.L.rotation.x) * ck;
     legPivots.R.rotation.x += (0 - legPivots.R.rotation.x) * ck;
     ['L', 'R'].forEach(function(k){
       armPivots[k].rotation.x += (0 - armPivots[k].rotation.x) * ck;
     });
+    armPivots.R.rotation.z = -.34;
+    armPivots.L.rotation.z = .34;
   }
 
   // «жест» по клику: машем перчаткой
@@ -696,6 +702,7 @@ function frame(){
   requestAnimationFrame(frame);
 }
 
+window.__dbg = {scene:scene, THREE:THREE};
 setBg('cream');
 applyCamera();
 requestAnimationFrame(frame);
