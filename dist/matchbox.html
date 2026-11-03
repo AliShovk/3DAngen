@@ -323,17 +323,6 @@ function drawLabel(mode){
     g.beginPath(); g.ellipse(512 + s2 * 250, 720, 62, 40, 0, 0, Math.PI * 2); g.fill();
   });
 
-  // слеза для печали
-  if (mode === 'sadness'){
-    g.fillStyle = '#63b8e8';
-    g.beginPath();
-    g.moveTo(322, 520);
-    g.bezierCurveTo(322, 520, 350, 570, 350, 592);
-    g.bezierCurveTo(350, 612, 330, 620, 316, 608);
-    g.bezierCurveTo(300, 596, 322, 548, 322, 520);
-    g.fill();
-  }
-
   labelTex.needsUpdate = true;
 }
 drawLabel('joy');
