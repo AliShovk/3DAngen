@@ -244,23 +244,37 @@ function labelTexture(){
 
 /* боковая тёрка */
 function strikerTexture(){
-  const {c, g} = cv(256, 512);
-  g.fillStyle = '#3a2a22'; g.fillRect(0, 0, 256, 512);
-  for (let i = 0; i < 2600; i++){
-    g.fillStyle = 'rgba(' + (150 + Math.random() * 80 | 0) + ',' + (120 + Math.random() * 60 | 0) + ',' + (95 + Math.random() * 50 | 0) + ',' + (.05 + Math.random() * .25) + ')';
-    g.fillRect(Math.random() * 256, Math.random() * 512, 1 + Math.random() * 2, 1 + Math.random() * 3);
+  const {c, g} = cv(256, 256);
+  g.fillStyle = '#3b2415';
+  g.fillRect(0, 0, 256, 256);
+  // сетка
+  g.strokeStyle = 'rgba(120,80,45,.55)';
+  g.lineWidth = 1;
+  for (let i = 0; i <= 256; i += 8){
+    g.beginPath(); g.moveTo(i, 0); g.lineTo(i, 256); g.stroke();
+    g.beginPath(); g.moveTo(0, i); g.lineTo(256, i); g.stroke();
+  }
+  // диагональная «наждачка»
+  g.strokeStyle = 'rgba(26,15,8,.45)';
+  g.lineWidth = 2;
+  for (let i = -256; i <= 256; i += 16){
+    g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 256, 256); g.stroke();
+  }
+  for (let i = 0; i < 2200; i++){
+    g.fillStyle = 'rgba(' + (150 + Math.random() * 70 | 0) + ',' + (110 + Math.random() * 50 | 0) + ',' + (80 + Math.random() * 40 | 0) + ',' + (.04 + Math.random() * .16) + ')';
+    g.fillRect(Math.random() * 256, Math.random() * 256, 1 + Math.random() * 2, 1 + Math.random() * 2);
   }
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.repeat.set(2, 3);
+  t.repeat.set(2.2, 3.4);
   return t;
 }
 
 /* ---------------------------------------------------------------- материалы */
 const M = {
   box:    toon(0xfffaea),
-  boxSide: toon(0xb07a43),
+  boxSide: toon(0x4a2f1c),
   boxEdge: toon(0x8d5c2e),
   inner:  toon(0x16302f),
   label:  toon(0xffffff, {map:labelTexture()}),
@@ -319,8 +333,13 @@ bodyBox.add(label);
 // тёрка на правой стенке
 const striker = new THREE.Mesh(new THREE.PlaneGeometry(BD - .07, BH - .07), M.striker);
 striker.rotation.y = Math.PI / 2;
-striker.position.set(BW / 2 + .003, boxY, 0);
+striker.position.set(BW / 2 + .006, boxY, 0);
 bodyBox.add(striker);
+
+const strikerL = new THREE.Mesh(new THREE.PlaneGeometry(BD - .07, BH - .07), M.striker);
+strikerL.rotation.y = -Math.PI / 2;
+strikerL.position.set(-BW / 2 - .006, boxY, 0);
+bodyBox.add(strikerL);
 
 // тёмная кромка-отбортовка по верху
 [[0, BD / 2 - WT / 2, BW - .02, WT], [0, -BD / 2 + WT / 2, BW - .02, WT]].forEach(function(v){
