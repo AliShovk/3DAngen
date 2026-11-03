@@ -285,15 +285,15 @@ function drawLabel(mode){
   g.strokeStyle = '#1d1512'; g.fillStyle = '#1d1512'; g.lineWidth = 20; g.lineCap = 'round';
   if (mode === 'joy'){
     // широкий открытый смех: тёмная полуэллипсная пасть + верхний ряд зубов
-    g.beginPath(); g.ellipse(512, 686, 132, 104, 0, 0, Math.PI); g.fill();
+    g.beginPath(); g.ellipse(512, 690, 172, 112, 0, 0, Math.PI); g.fill();
     g.fillStyle = '#ffffff';
-    g.beginPath(); g.ellipse(512, 686, 132, 34, 0, 0, Math.PI); g.fill();
+    g.beginPath(); g.ellipse(512, 690, 172, 19, 0, 0, Math.PI); g.fill();
     g.fillStyle = '#1d1512';
-    g.lineWidth = 8;
+    g.lineWidth = 6;
     for (let i = 1; i < 4; i++){
-      g.beginPath(); g.moveTo(512 - 132 + i * 66, 686); g.lineTo(512 - 132 + i * 66, 716); g.stroke();
+      g.beginPath(); g.moveTo(512 - 172 + i * 86, 690); g.lineTo(512 - 172 + i * 86, 707); g.stroke();
     }
-    g.beginPath(); g.ellipse(512, 686, 132, 104, 0, 0, Math.PI); g.stroke();
+    g.beginPath(); g.ellipse(512, 690, 172, 112, 0, 0, Math.PI); g.stroke();
   } else if (mode === 'surprise'){
     g.beginPath(); g.ellipse(512, 752, 58, 76, 0, 0, Math.PI * 2); g.fill();
   } else if (mode === 'anger'){
