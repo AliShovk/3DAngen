@@ -70,6 +70,7 @@ async def shoot(args) -> int:
         tabs = json.loads(urllib.request.urlopen(f"http://127.0.0.1:{port}/json/list", timeout=5).read())
         page = [t for t in tabs if t.get("type") == "page"][0]
         mid = 0
+        errs = []
         async with websockets.connect(page["webSocketDebuggerUrl"], max_size=None) as ws:
             async def call(method, params=None):
                 nonlocal mid
@@ -79,8 +80,17 @@ async def shoot(args) -> int:
                     msg = json.loads(await ws.recv())
                     if msg.get("id") == mid:
                         return msg
+                    m = msg.get("method")
+                    if m == "Runtime.exceptionThrown":
+                        det = msg["params"]["exceptionDetails"]
+                        errs.append("JS: " + str(det.get("text")) + " " +
+                                    str((det.get("exception") or {}).get("description", ""))[:400])
+                    elif m == "Log.entryAdded" and msg["params"]["entry"].get("level") in ("error", "warning"):
+                        errs.append("LOG: " + msg["params"]["entry"].get("text", "")[:300])
 
             await call("Page.enable")
+            await call("Runtime.enable")
+            await call("Log.enable")
             await call("Emulation.setDeviceMetricsOverride",
                        {"width": args.w, "height": args.h, "deviceScaleFactor": 1, "mobile": False})
             await call("Page.navigate", {"url": file.as_uri()})
@@ -90,6 +100,11 @@ async def shoot(args) -> int:
             out.write_bytes(base64.b64decode(data))
     finally:
         proc.kill()
+
+    if errs:
+        print("ошибки страницы:")
+        for e in errs[:12]:
+            print("  " + e)
 
     print(f"готово: {out} ({out.stat().st_size / 1024:.0f} KB, {args.w}×{args.h})")
     return 0
