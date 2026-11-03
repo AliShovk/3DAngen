@@ -101,7 +101,7 @@ const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true, po
 renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.02;
+renderer.toneMappingExposure = 1.06;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -126,7 +126,7 @@ const RAMP = toonRamp();
 function toon(color, opts){ return new THREE.MeshToonMaterial(Object.assign({color:color, gradientMap:RAMP}, opts || {})); }
 
 const OUTLINE_MAT = new THREE.ShaderMaterial({
-  uniforms:{thickness:{value:.004}, color:{value:new THREE.Color(0x2a1f1a)}},
+  uniforms:{thickness:{value:.0052}, color:{value:new THREE.Color(0x1b1310)}},
   vertexShader:'uniform float thickness; void main(){ vec3 p = position + normal * thickness; gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }',
   fragmentShader:'uniform vec3 color; void main(){ gl_FragColor = vec4(color, 1.0); }',
   side:THREE.BackSide
@@ -190,12 +190,12 @@ function labelTexture(){
 
   // пастельные арки
   const arcs = [
-    {x: 90,  y: 190, r: 210, col:'#7cc3c0'},
-    {x: 860, y: 120, r: 175, col:'#f0a04b'},
-    {x: 60,  y: 860, r: 200, col:'#f4c14b'},
-    {x: 930, y: 900, r: 195, col:'#f2a0b5'},
-    {x: 500, y: 60,  r: 120, col:'#9ed4cf'},
-    {x: 210, y: 980, r: 130, col:'#f7c9a0'}
+    {x: 90,  y: 190, r: 210, col:'#2ec4c0'},
+    {x: 860, y: 120, r: 175, col:'#ff9a1f'},
+    {x: 60,  y: 860, r: 200, col:'#ffc61e'},
+    {x: 930, y: 900, r: 195, col:'#ff6fa5'},
+    {x: 500, y: 60,  r: 120, col:'#7fe0d8'},
+    {x: 210, y: 980, r: 130, col:'#ffb37a'}
   ];
   arcs.forEach(function(a){
     g.fillStyle = a.col;
@@ -255,20 +255,21 @@ function strikerTexture(){
 
 /* ---------------------------------------------------------------- материалы */
 const M = {
-  box:    toon(0xf7efdc),
-  inner:  toon(0x2f4a49),
+  box:    toon(0xfffaea),
+  inner:  toon(0x16302f),
   label:  toon(0xffffff, {map:labelTexture()}),
   striker: toon(0xffffff, {map:strikerTexture()}),
-  stem:   toon(0xf0dcb4),
-  headA:  toon(0xf06a2c),
-  headB:  toon(0xe2452e),
-  headC:  toon(0xf7a03c),
-  headD:  toon(0xd93b2b),
-  face:   toon(0x2a1f1a),
+  stem:   toon(0xf7e6bd),
+  headA:  toon(0xff5a1f),
+  headB:  toon(0xe81d2c),
+  headC:  toon(0xffb01e),
+  headD:  toon(0xff7a12),
+  face:   toon(0x1d1512),
   glove:  toon(0xffffff),
-  limb:   toon(0xf2a08a),
-  shoe:   toon(0xe98aa0),
-  sole:   toon(0xfff6ec),
+  limb:   toon(0xf28f6b),
+  shoe:   toon(0xff4f86),
+  sole:   toon(0xfffdf6),
+  headHeld: toon(0xe81d2c),
   eye:    toon(0xffffff),
   pupil:  toon(0x2a1f1a)
 };
@@ -368,66 +369,81 @@ for (let i = 0; i < 9; i++){
   matches.push(g);
 }
 
-/* --- рука в перчатке со спичкой --- */
-function glove(){
+/* --- руки в перчатках --- */
+function glove(sign){
   const g = new THREE.Group();
-  const cuff = cyl(.085, .072, .075, M.glove, 18);
-  cuff.position.y = -.075;
+  const cuff = cyl(.082, .070, .085, M.glove, 18);
+  cuff.position.y = -.088;
   g.add(cuff);
-  const palm = ball(.095, M.glove, 20);
-  palm.scale.set(1, .92, .82);
+  const palm = ball(.098, M.glove, 20);
+  palm.scale.set(1, 1.02, .84);
   g.add(palm);
   for (let i = 0; i < 3; i++){
-    const f = new THREE.Mesh(new THREE.CapsuleGeometry(.030, .055, 4, 10), M.glove);
-    f.position.set((i - 1) * .050, .095, .006);
-    f.rotation.z = (i - 1) * -.30;
+    const f = new THREE.Mesh(new THREE.CapsuleGeometry(.031, .058, 4, 10), M.glove);
+    f.position.set((i - 1) * .050, .082, .030);
+    f.rotation.x = -.95;
+    f.rotation.z = (i - 1) * -.20;
     f.castShadow = true;
     g.add(f);
+    const f2 = new THREE.Mesh(new THREE.CapsuleGeometry(.029, .040, 4, 10), M.glove);
+    f2.position.set((i - 1) * .050, .112, .082);
+    f2.rotation.x = -2.15;
+    f2.castShadow = true;
+    g.add(f2);
   }
-  const thumb = new THREE.Mesh(new THREE.CapsuleGeometry(.032, .048, 4, 10), M.glove);
-  thumb.position.set(-.078, .020, .040);
-  thumb.rotation.z = .95;
+  const thumb = new THREE.Mesh(new THREE.CapsuleGeometry(.033, .052, 4, 10), M.glove);
+  thumb.position.set(-sign * .052, .062, .098);
+  thumb.rotation.set(-1.05, 0, sign * .80);
   thumb.castShadow = true;
   g.add(thumb);
   return g;
 }
 
-const armPivot = new THREE.Group();
-armPivot.position.set(BW / 2, 1.00, .10);
-hero.add(armPivot);
+function heldMatch(){
+  const g = new THREE.Group();
+  const stem = cyl(.014, .014, .40, M.stem, 10);
+  stem.position.y = .145;
+  g.add(stem);
+  const neck = cyl(.018, .024, .045, M.stem, 10);
+  neck.position.y = .345;
+  g.add(neck);
+  const head = ball(.050, M.headHeld, 16);
+  head.position.y = .385;
+  head.scale.set(1, 1.25, 1);
+  g.add(head);
+  g.rotation.z = -Math.PI / 2;    // спичка ложится поперёк ладони и уходит наружу
+  g.position.set(-.03, .060, .086);
+  return g;
+}
 
-const shoulderBall = ball(.050, M.limb, 14);
-armPivot.add(shoulderBall);
+const armPivots = {};
+[-1, 1].forEach(function(sign){
+  const pivot = new THREE.Group();
+  pivot.position.set(sign * (BW / 2 + .005), 1.00, .07);
+  hero.add(pivot);
+  const sb = ball(.052, M.limb, 16);
+  pivot.add(sb);
+  const elbow = [sign * .115, -.205, .045];
+  const wrist = [sign * .150, -.395, .105];
+  stick([0, 0, 0], elbow, .026, M.limb, pivot);
+  stick(elbow, wrist, .023, M.limb, pivot);
 
-stick([0, 0, 0], [.15, -.17, .07], .025, M.limb, armPivot);
-stick([.15, -.17, .07], [.175, -.34, .14], .022, M.limb, armPivot);
+  const hand = glove(sign);
+  hand.position.set(wrist[0], wrist[1] - .015, wrist[2]);
+  hand.rotation.z = sign * .52;
+  hand.rotation.x = .12;
+  pivot.add(hand);
 
-const hand = glove();
-hand.position.set(.175, -.36, .14);
-hand.rotation.z = -.9;
-hand.rotation.x = .25;
-armPivot.add(hand);
+  if (sign > 0) hand.add(heldMatch());    // спичка в правой перчатке
+  armPivots[sign > 0 ? 'R' : 'L'] = pivot;
+});
 
-// спичка «в кулаке» — идёт вдоль ладони
-const heldMatch = new THREE.Group();
-const hmStem = cyl(.014, .014, .38, M.stem, 10);
-hmStem.position.y = .19;
-heldMatch.add(hmStem);
-const hmHead = ball(.048, M.headB, 16);
-hmHead.position.y = .395;
-hmHead.scale.set(1, 1.15, 1);
-heldMatch.add(hmHead);
-heldMatch.position.set(.175, -.33, .155);
-heldMatch.rotation.z = -.70;
-heldMatch.rotation.x = -.10;
-armPivot.add(heldMatch);
-
-/* --- ноги и обувь --- */
+/* --- ноги и обувь --- *//* --- ноги и обувь --- */
 const legParts = {};
 [-1, 1].forEach(function(sign){
-  const hip = new THREE.Vector3(sign * .175, botY + .03, .03);
-  const ankle = new THREE.Vector3(sign * .235, .11, .09);
-  const s1 = stick(hip.toArray(), ankle.toArray(), .024, M.limb, hero);
+  const hip = new THREE.Vector3(sign * .16, botY + .055, .03);
+  const ankle = new THREE.Vector3(sign * .205, .125, .080);
+  const s1 = stick(hip.toArray(), ankle.toArray(), .028, M.limb, hero);
   legParts[sign > 0 ? 'R' : 'L'] = {hip:hip, stick:s1};
 });
 
@@ -438,8 +454,9 @@ function shoe(sign){
   rbox(.215, .075, .13, .035, M.sole, 0, .105, .19, g);      // носок
   rbox(.10, .045, .06, .018, M.sole, 0, .195, .105, g);      // язык
   rbox(.13, .030, .05, .012, M.shoe, 0, .062, -.06, g);      // задник
-  g.position.set(sign * .235, 0, .13);
+  g.position.set(sign * .222, -.004, .115);
   g.rotation.y = -sign * .14;
+  g.scale.setScalar(.52);
   hero.add(g);
   return g;
 }
@@ -484,9 +501,9 @@ scene.add(shadow);
 })();
 
 /* ---------------------------------------------------------------- свет */
-scene.add(new THREE.HemisphereLight(0xfff4e6, 0xe8d3bb, 1.15));
+scene.add(new THREE.HemisphereLight(0xfff6ea, 0xe6cdb2, .95));
 
-const key = new THREE.DirectionalLight(0xfff4e2, 1.9);
+const key = new THREE.DirectionalLight(0xfff8ec, 2.35);
 key.position.set(2.4, 3.2, 2.6);
 key.castShadow = true;
 key.shadow.mapSize.set(2048, 2048);
@@ -636,20 +653,24 @@ function frame(){
     legPivots.R.rotation.x = -s * .38;
     legPivots.L.rotation.z = -.06;
     legPivots.R.rotation.z = .06;
-    armPivot.rotation.z = .10 + Math.sin(stepPhase + 1) * .18;
-    armPivot.rotation.x = Math.cos(stepPhase + 1) * .10;
+    armPivots.R.rotation.x = Math.sin(stepPhase + Math.PI) * .34;
+    armPivots.L.rotation.x = Math.sin(stepPhase) * .34;
+    armPivots.R.rotation.z = -.10;
+    armPivots.L.rotation.z = .10;
   } else {
     legPivots.L.rotation.x += (0 - legPivots.L.rotation.x) * ck;
     legPivots.R.rotation.x += (0 - legPivots.R.rotation.x) * ck;
-    armPivot.rotation.z += (.10 - armPivot.rotation.z) * ck;
-    armPivot.rotation.x += (0 - armPivot.rotation.x) * ck;
+    ['L', 'R'].forEach(function(k){
+      armPivots[k].rotation.x += (0 - armPivots[k].rotation.x) * ck;
+    });
   }
 
   // «жест» по клику: машем перчаткой
   if (waveT > 0){
     const w2 = Math.sin(waveT * Math.PI * 3) * waveT;
-    armPivot.rotation.z -= w2 * .75;
-    armPivot.rotation.x += w2 * .35;
+    armPivots.R.rotation.z -= w2 * .55;
+    armPivots.R.rotation.x += w2 * .35;
+    armPivots.L.rotation.z += w2 * .35;
   }
 
   // спички покачиваются
