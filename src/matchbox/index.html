@@ -427,7 +427,7 @@ function heldMatch(){
 const armPivots = {};
 [-1, 1].forEach(function(sign){
   const pivot = new THREE.Group();
-  pivot.position.set(sign * (BW / 2 + .005), 1.30, .07);
+  pivot.position.set(sign * (BW / 2 + .02), 1.28, .20);
   hero.add(pivot);
   const sb = ball(.052, M.limb, 16);
   pivot.add(sb);
@@ -671,16 +671,16 @@ function frame(){
     legPivots.R.rotation.z = .06;
     armPivots.R.rotation.x = Math.sin(stepPhase + Math.PI) * .34;
     armPivots.L.rotation.x = Math.sin(stepPhase) * .34;
-    armPivots.R.rotation.z = -.34;
-    armPivots.L.rotation.z = .34;
+    armPivots.R.rotation.z = -.42;
+    armPivots.L.rotation.z = .42;
   } else {
     legPivots.L.rotation.x += (0 - legPivots.L.rotation.x) * ck;
     legPivots.R.rotation.x += (0 - legPivots.R.rotation.x) * ck;
     ['L', 'R'].forEach(function(k){
       armPivots[k].rotation.x += (0 - armPivots[k].rotation.x) * ck;
     });
-    armPivots.R.rotation.z = -.34;
-    armPivots.L.rotation.z = .34;
+    armPivots.R.rotation.z = -.42;
+    armPivots.L.rotation.z = .42;
   }
 
   // «жест» по клику: машем перчаткой
