@@ -299,11 +299,11 @@ const M = {
 /* ---------------------------------------------------------------- текстуры окружения */
 function woodTableTex(){
   const {c, g} = cv(1024, 1024);
-  g.fillStyle = '#b8814a'; g.fillRect(0, 0, 1024, 1024);
+  g.fillStyle = '#6b4527'; g.fillRect(0, 0, 1024, 1024);
   const plank = 1024 / 5;
   for (let i = 0; i < 5; i++){
     const y0 = i * plank;
-    g.fillStyle = i % 2 ? '#b07a44' : '#bf8a54';
+    g.fillStyle = i % 2 ? '#5e3d21' : '#6f4a29';
     g.fillRect(0, y0, 1024, plank - 3);
     g.strokeStyle = 'rgba(56,32,12,.5)'; g.lineWidth = 3;
     g.strokeRect(0, y0, 1024, plank - 3);
@@ -322,9 +322,9 @@ function woodTableTex(){
     }
   }
   const grd = g.createLinearGradient(0, 0, 0, 1024);
-  grd.addColorStop(0, 'rgba(255,235,205,.22)');
+  grd.addColorStop(0, 'rgba(255,225,185,.14)');
   grd.addColorStop(.45, 'rgba(255,255,255,0)');
-  grd.addColorStop(1, 'rgba(60,35,12,.18)');
+  grd.addColorStop(1, 'rgba(28,16,6,.35)');
   g.fillStyle = grd; g.fillRect(0, 0, 1024, 1024);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
@@ -422,19 +422,19 @@ function envTexture(){
 
 /* ---------------------------------------------------------------- материалы окружения (реализм) */
 const R = {
-  tableTop:  new THREE.MeshStandardMaterial({map: woodTableTex(), roughness:.42, metalness:0}),
-  tableEdge: new THREE.MeshStandardMaterial({color:0x7d4f22, roughness:.55, metalness:0}),
+  tableTop:  new THREE.MeshStandardMaterial({map: woodTableTex(), roughness:.38, metalness:0.02}),
+  tableEdge: new THREE.MeshStandardMaterial({color:0x33200f, roughness:.5, metalness:0}),
   marble:    new THREE.MeshStandardMaterial({map: marbleTex(), roughness:.26, metalness:0}),
-  cabinet:   new THREE.MeshStandardMaterial({color:0x2c6a6b, roughness:.52, metalness:0}),
-  cabinetDoor: new THREE.MeshStandardMaterial({color:0x347b7c, roughness:.42, metalness:0}),
+  cabinet:   new THREE.MeshStandardMaterial({color:0x22262a, roughness:.55, metalness:.05}),
+  cabinetDoor: new THREE.MeshStandardMaterial({color:0x2b3035, roughness:.4, metalness:.08}),
   handle:    new THREE.MeshStandardMaterial({color:0xd0a94e, roughness:.28, metalness:.9}),
   wall:      new THREE.MeshStandardMaterial({color:0xf2e9dd, roughness:.95, metalness:0}),
   tile:      new THREE.MeshStandardMaterial({map: tileTex(), roughness:.55, metalness:0}),
   floor:     new THREE.MeshStandardMaterial({map: parquetTex(), roughness:.6, metalness:0}),
   metal:     new THREE.MeshStandardMaterial({color:0xc3cad1, roughness:.3, metalness:.85}),
-  fridge:    new THREE.MeshStandardMaterial({color:0xf3f5f6, roughness:.35, metalness:.15}),
+  fridge:    new THREE.MeshStandardMaterial({color:0x3a4045, roughness:.35, metalness:.45}),
   window:    new THREE.MeshBasicMaterial({map: skyTex()}),
-  frame:     new THREE.MeshStandardMaterial({color:0xf6f1e6, roughness:.6}),
+  frame:     new THREE.MeshStandardMaterial({color:0xd8d2c6, roughness:.6}),
   lamp:      new THREE.MeshStandardMaterial({color:0x2b3a3a, roughness:.35, metalness:.7})
 };
 Object.keys(R).forEach(function(k){ if (R[k].isMeshStandardMaterial) R[k].envMapIntensity = .75; });
