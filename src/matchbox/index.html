@@ -272,6 +272,7 @@ const M = {
   accent: toon(0xff8a1f),
   tread:  toon(0x232028),
   headHeld: toon(0xe81d2c),
+  stemHeld: toon(0xe9c98c),
   eye:    toon(0xffffff),
   pupil:  toon(0x2a1f1a)
 };
@@ -374,28 +375,30 @@ for (let i = 0; i < 9; i++){
 /* --- руки в перчатках --- */
 function glove(sign){
   const g = new THREE.Group();
+  // манжета сверху — там, где кисть переходит в руку
   const cuff = cyl(.082, .070, .085, M.glove, 18);
-  cuff.position.y = -.088;
+  cuff.position.y = .088;
   g.add(cuff);
   const palm = ball(.098, M.glove, 20);
   palm.scale.set(1, 1.02, .84);
   g.add(palm);
+  // пальцы смотрят вниз (кисть на конце опущенной руки)
   for (let i = 0; i < 3; i++){
     const f = new THREE.Mesh(new THREE.CapsuleGeometry(.031, .058, 4, 10), M.glove);
-    f.position.set((i - 1) * .050, .098, .018);
-    f.rotation.x = -.28;
+    f.position.set((i - 1) * .050, -.098, .014);
+    f.rotation.x = .30;
     f.rotation.z = (i - 1) * -.16;
     f.castShadow = true;
     g.add(f);
     const f2 = new THREE.Mesh(new THREE.CapsuleGeometry(.029, .040, 4, 10), M.glove);
-    f2.position.set((i - 1) * .050, .150, .050);
-    f2.rotation.x = -.75;
+    f2.position.set((i - 1) * .050, -.150, .046);
+    f2.rotation.x = .80;
     f2.castShadow = true;
     g.add(f2);
   }
   const thumb = new THREE.Mesh(new THREE.CapsuleGeometry(.033, .052, 4, 10), M.glove);
-  thumb.position.set(-sign * .075, .072, .040);
-  thumb.rotation.set(-.30, 0, sign * .85);
+  thumb.position.set(-sign * .075, -.070, .042);
+  thumb.rotation.set(.30, 0, sign * .85);
   thumb.castShadow = true;
   g.add(thumb);
   return g;
@@ -403,18 +406,18 @@ function glove(sign){
 
 function heldMatch(){
   const g = new THREE.Group();
-  const stem = cyl(.014, .014, .40, M.stem, 10);
+  const stem = cyl(.016, .016, .40, M.stemHeld, 10);
   stem.position.y = .145;
   g.add(stem);
   const neck = cyl(.018, .024, .045, M.stem, 10);
   neck.position.y = .345;
   g.add(neck);
-  const head = ball(.050, M.headHeld, 16);
-  head.position.y = .385;
+  const head = ball(.056, M.headHeld, 16);
+  head.position.y = .392;
   head.scale.set(1, 1.25, 1);
   g.add(head);
-  g.rotation.z = -Math.PI / 2;    // спичка ложится поперёк ладони и уходит наружу
-  g.position.set(-.03, .060, .086);
+  g.rotation.z = -.14;                // спичка стоит в кулаке почти вертикально
+  g.position.set(-.020, -.020, .052);   // древко между пальцами и ладонью
   return g;
 }
 
@@ -433,7 +436,7 @@ const armPivots = {};
   const hand = glove(sign);
   hand.position.set(wrist[0], wrist[1] - .015, wrist[2]);
   hand.rotation.z = 0;
-  hand.rotation.x = .08;
+  hand.rotation.x = -.10;
   pivot.add(hand);
 
   if (sign > 0) hand.add(heldMatch());    // спичка в правой перчатке
