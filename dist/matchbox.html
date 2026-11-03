@@ -76,7 +76,7 @@
 </header>
 
 <div class="hint">
-  Тяните мышью — вращение · колесо — зум · клик по коробку — жест · <kbd>W</kbd> шаг · <kbd>R</kbd> вращение
+  Тяните мышью — вращение · колесо — зум · клик по коробке — жест · <kbd>W</kbd> шаг · <kbd>R</kbd> вращение
 </div>
 
 <div class="bar">
@@ -273,9 +273,11 @@ const M = {
   headD:  toon(0xff7a12),
   face:   toon(0x1d1512),
   glove:  toon(0xffffff),
-  limb:   toon(0xf28f6b),
-  shoe:   toon(0xff4f86),
-  sole:   toon(0xfffdf6),
+  limb:   toon(0x4a3423),
+  shoe:   toon(0x2f6fd0),
+  sole:   toon(0xf7f4ec),
+  accent: toon(0xff8a1f),
+  tread:  toon(0x232028),
   headHeld: toon(0xe81d2c),
   eye:    toon(0xffffff),
   pupil:  toon(0x2a1f1a)
@@ -287,7 +289,7 @@ hero.position.y = .06;
 scene.add(hero);
 
 const BW = .92, BH = .92, BD = .54, WT = .035;
-const boxY = .80;                       // центр коробка
+const boxY = 1.10;                       // центр коробка
 const topY = boxY + BH / 2, botY = boxY - BH / 2;
 
 // полый коробок: 4 стенки + дно (верх открыт — спички стоят внутри)
@@ -387,20 +389,20 @@ function glove(sign){
   g.add(palm);
   for (let i = 0; i < 3; i++){
     const f = new THREE.Mesh(new THREE.CapsuleGeometry(.031, .058, 4, 10), M.glove);
-    f.position.set((i - 1) * .050, .082, .030);
-    f.rotation.x = -.95;
-    f.rotation.z = (i - 1) * -.20;
+    f.position.set((i - 1) * .050, .098, .018);
+    f.rotation.x = -.28;
+    f.rotation.z = (i - 1) * -.16;
     f.castShadow = true;
     g.add(f);
     const f2 = new THREE.Mesh(new THREE.CapsuleGeometry(.029, .040, 4, 10), M.glove);
-    f2.position.set((i - 1) * .050, .112, .082);
-    f2.rotation.x = -2.15;
+    f2.position.set((i - 1) * .050, .150, .050);
+    f2.rotation.x = -.75;
     f2.castShadow = true;
     g.add(f2);
   }
   const thumb = new THREE.Mesh(new THREE.CapsuleGeometry(.033, .052, 4, 10), M.glove);
-  thumb.position.set(-sign * .052, .062, .098);
-  thumb.rotation.set(-1.05, 0, sign * .80);
+  thumb.position.set(-sign * .075, .072, .040);
+  thumb.rotation.set(-.30, 0, sign * .85);
   thumb.castShadow = true;
   g.add(thumb);
   return g;
@@ -426,7 +428,7 @@ function heldMatch(){
 const armPivots = {};
 [-1, 1].forEach(function(sign){
   const pivot = new THREE.Group();
-  pivot.position.set(sign * (BW / 2 + .005), 1.00, .07);
+  pivot.position.set(sign * (BW / 2 + .005), 1.30, .07);
   hero.add(pivot);
   const sb = ball(.052, M.limb, 16);
   pivot.add(sb);
@@ -437,8 +439,8 @@ const armPivots = {};
 
   const hand = glove(sign);
   hand.position.set(wrist[0], wrist[1] - .015, wrist[2]);
-  hand.rotation.z = sign * .52;
-  hand.rotation.x = .12;
+  hand.rotation.z = 0;
+  hand.rotation.x = .08;
   pivot.add(hand);
 
   if (sign > 0) hand.add(heldMatch());    // спичка в правой перчатке
@@ -448,22 +450,28 @@ const armPivots = {};
 /* --- ноги и обувь --- *//* --- ноги и обувь --- */
 const legParts = {};
 [-1, 1].forEach(function(sign){
-  const hip = new THREE.Vector3(sign * .16, botY + .055, .03);
-  const ankle = new THREE.Vector3(sign * .205, .125, .080);
-  const s1 = stick(hip.toArray(), ankle.toArray(), .028, M.limb, hero);
+  const hip = new THREE.Vector3(sign * .155, botY + .04, .03);
+  const ankle = new THREE.Vector3(sign * .210, .155, .085);
+  const s1 = stick(hip.toArray(), ankle.toArray(), .030, M.limb, hero);
   legParts[sign > 0 ? 'R' : 'L'] = {hip:hip, stick:s1};
 });
 
 function shoe(sign){
   const g = new THREE.Group();
-  rbox(.235, .085, .42, .040, M.sole, 0, .042, .05, g);      // подошва
-  rbox(.225, .125, .34, .055, M.shoe, 0, .135, .01, g);      // верх
-  rbox(.215, .075, .13, .035, M.sole, 0, .105, .19, g);      // носок
-  rbox(.10, .045, .06, .018, M.sole, 0, .195, .105, g);      // язык
-  rbox(.13, .030, .05, .012, M.shoe, 0, .062, -.06, g);      // задник
-  g.position.set(sign * .222, -.004, .115);
-  g.rotation.y = -sign * .14;
-  g.scale.setScalar(.52);
+  rbox(.245, .075, .44, .038, M.tread, 0, .038, .05, g);      // подошва тёмная
+  rbox(.255, .055, .45, .040, M.sole, 0, .092, .05, g);       // светлая окантовка
+  rbox(.235, .150, .36, .055, M.shoe, 0, .185, .005, g);      // синий верх
+  rbox(.225, .085, .14, .035, M.sole, 0, .150, .245, g);      // белый мысок
+  rbox(.205, .048, .075, .016, M.sole, 0, .272, .185, g);     // язычок
+  rbox(.235, .120, .026, .012, M.accent, 0, .200, -.238, g);  // оранжевая пятка
+  [-1, 1].forEach(function(sd){
+    rbox(.026, .060, .31, .012, M.accent, sd * .172, .208, .010, g);   // оранжевая полоса по боку
+    rbox(.030, .036, .08, .010, M.accent, sd * .170, .140, .100, g);   // оранжевый акцент у мыска
+  });
+  rbox(.245, .026, .05, .008, M.tread, 0, .128, .05, g);      // тонкая тёмная линия
+  g.position.set(sign * .225, -.004, .095);
+  g.rotation.y = -sign * .12;
+  g.scale.setScalar(.70);
   hero.add(g);
   return g;
 }
@@ -530,8 +538,8 @@ rimLight.position.set(-1.2, 2.0, -2.4);
 scene.add(rimLight);
 
 /* ---------------------------------------------------------------- камера */
-const target = new THREE.Vector3(0, .84, 0);
-const cam = {az:.44, pol:1.27, rad:2.98, taz:.44, tpol:1.27, trad:2.98};
+const target = new THREE.Vector3(0, 1.14, 0);
+const cam = {az:.44, pol:1.34, rad:3.60, taz:.44, tpol:1.34, trad:3.60};
 let spin = false, walkOn = true;
 let dragging = false, lastX = 0, lastY = 0, moved = 0, lastInteract = performance.now();
 
