@@ -367,7 +367,7 @@ for (let i = 0; i < 9; i++){
   const row = Math.floor(i / 3), col = i % 3;
   const x = (col - 1) * .235 + (row === 1 ? .115 : row === 2 ? -.10 : 0);
   const z = (row - 1) * .135;
-  const h = 1.04 + Math.random() * .18;
+  const h = 1.26 + Math.random() * .22;
   const stem = cyl(.016, .016, h, M.stem, 10);
   stem.position.y = h / 2;
   g.add(stem);
@@ -379,7 +379,7 @@ for (let i = 0; i < 9; i++){
   head.scale.set(1, 1.28, 1);
   g.add(head);
   // личико на головке
-  if (i % 3 === 0){
+  if (true){                 // личико у каждой спички
     const e1 = ball(.012, M.eye, 8), e2 = ball(.012, M.eye, 8);
     e1.position.set(-.019, h + .040, .046);
     e2.position.set(.019, h + .040, .046);
@@ -582,8 +582,8 @@ rimLight.position.set(-1.2, 2.0, -2.4);
 scene.add(rimLight);
 
 /* ---------------------------------------------------------------- камера */
-const target = new THREE.Vector3(0, 1.26, 0);
-const cam = {az:.44, pol:1.34, rad:3.85, taz:.44, tpol:1.34, trad:3.85};
+const target = new THREE.Vector3(0, 1.34, 0);
+const cam = {az:.44, pol:1.34, rad:4.05, taz:.44, tpol:1.34, trad:4.05};
 let spin = false, walkOn = true, armDeg = 17;
 let dragging = false, lastX = 0, lastY = 0, moved = 0, lastInteract = performance.now();
 
