@@ -260,6 +260,8 @@ function strikerTexture(){
 /* ---------------------------------------------------------------- материалы */
 const M = {
   box:    toon(0xfffaea),
+  boxSide: toon(0xb07a43),
+  boxEdge: toon(0x8d5c2e),
   inner:  toon(0x16302f),
   label:  toon(0xffffff, {map:labelTexture()}),
   striker: toon(0xffffff, {map:strikerTexture()}),
@@ -295,10 +297,10 @@ const bodyBox = new THREE.Group();
 hero.add(bodyBox);
 
 rbox(BW, BH, WT, .022, M.box, 0, boxY,  BD / 2 - WT / 2, bodyBox);   // передняя
-rbox(BW, BH, WT, .022, M.box, 0, boxY, -BD / 2 + WT / 2, bodyBox);   // задняя
-rbox(WT, BH, BD, .022, M.box, -BW / 2 + WT / 2, boxY, 0, bodyBox);   // левая
-rbox(WT, BH, BD, .022, M.box,  BW / 2 - WT / 2, boxY, 0, bodyBox);   // правая
-rbox(BW, WT, BD, .022, M.box, 0, botY + WT / 2, 0, bodyBox);         // дно
+rbox(BW, BH, WT, .022, M.boxSide, 0, boxY, -BD / 2 + WT / 2, bodyBox);   // задняя — картон
+rbox(WT, BH, BD, .022, M.boxSide, -BW / 2 + WT / 2, boxY, 0, bodyBox);   // левая — картон
+rbox(WT, BH, BD, .022, M.boxSide,  BW / 2 - WT / 2, boxY, 0, bodyBox);   // правая — картон
+rbox(BW, WT, BD, .022, M.boxSide, 0, botY + WT / 2, 0, bodyBox);         // дно — картон
 
 // внутренняя полость (видно изнутри через открытый верх)
 const innerMat = new THREE.MeshToonMaterial({color:0x334b49, gradientMap:RAMP, side:THREE.BackSide});
@@ -322,10 +324,10 @@ bodyBox.add(striker);
 
 // тёмная кромка-отбортовка по верху
 [[0, BD / 2 - WT / 2, BW - .02, WT], [0, -BD / 2 + WT / 2, BW - .02, WT]].forEach(function(v){
-  rbox(v[2], .028, .016, .006, M.inner, v[0], topY + .002, v[1], bodyBox);
+  rbox(v[2], .028, .016, .006, M.boxEdge, v[0], topY + .002, v[1], bodyBox);
 });
 [[-BW / 2 + WT / 2, 0], [BW / 2 - WT / 2, 0]].forEach(function(v){
-  rbox(.016, .028, BD - .02, .006, M.inner, v[0], topY + .002, v[1], bodyBox);
+  rbox(.016, .028, BD - .02, .006, M.boxEdge, v[0], topY + .002, v[1], bodyBox);
 });
 
 /* --- спички внутри коробка --- */
