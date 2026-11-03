@@ -270,7 +270,7 @@ const M = {
   headD:  toon(0xff7a12),
   face:   toon(0x1d1512),
   glove:  toon(0xffffff),
-  limb:   toon(0x4a3423),
+  limb:   toon(0xf0dcb4),
   shoe:   toon(0x2f6fd0),
   sole:   toon(0xf7f4ec),
   accent: toon(0xff8a1f),
@@ -433,7 +433,9 @@ const armPivots = {};
   const pivot = new THREE.Group();
   pivot.position.set(sign * (BW / 2 + .02), 1.30, .20);
   hero.add(pivot);
-  const sb = ball(.052, M.limb, 16);
+  const sb = ball(.052, sign > 0 ? M.headA : M.headC, 16);
+  sb.scale.set(1, 1.25, 1);
+  sb.position.y = -.01;
   pivot.add(sb);
   const elbow = [sign * .115, -.205, .045];
   const wrist = [sign * .150, -.395, .105];
@@ -458,6 +460,10 @@ const legParts = {};
   const hip = new THREE.Vector3(sign * .155, botY + .04, .03);
   const ankle = new THREE.Vector3(sign * .210, .155, .085);
   const s1 = stick(hip.toArray(), ankle.toArray(), .030, M.limb, hero);
+  const lh = ball(.046, sign > 0 ? M.headB : M.headA, 16);
+  lh.scale.set(1, 1.3, 1);
+  lh.position.set(sign * .155, botY - .012, .03);
+  hero.add(lh);
   legParts[sign > 0 ? 'R' : 'L'] = {hip:hip, stick:s1};
 });
 
