@@ -297,22 +297,39 @@ function drawLabel(mode){
   } else if (mode === 'surprise'){
     g.beginPath(); g.ellipse(512, 752, 58, 76, 0, 0, Math.PI * 2); g.fill();
   } else if (mode === 'anger'){
-    // оскал: приоткрытый рот с зубами
+    // широкий оскал: пасть + зубы сверху и снизу
     g.beginPath();
-    g.moveTo(414, 712);
-    g.quadraticCurveTo(512, 690, 610, 712);
-    g.quadraticCurveTo(600, 806, 512, 812);
-    g.quadraticCurveTo(424, 806, 414, 712);
+    g.moveTo(374, 698);
+    g.quadraticCurveTo(512, 674, 650, 698);
+    g.quadraticCurveTo(640, 840, 512, 846);
+    g.quadraticCurveTo(384, 840, 374, 698);
     g.closePath(); g.fill();
+
     g.fillStyle = '#ffffff';
-    for (let i = 0; i < 4; i++){
-      g.beginPath();
-      const bx = 430 + i * 44;
-      g.moveTo(bx, 706); g.lineTo(bx + 36, 706); g.lineTo(bx + 32, 748); g.lineTo(bx + 4, 748);
-      g.closePath(); g.fill();
+    // верхний ряд
+    g.beginPath();
+    g.moveTo(388, 700); g.quadraticCurveTo(512, 680, 636, 700);
+    g.lineTo(630, 736); g.quadraticCurveTo(512, 716, 394, 736);
+    g.closePath(); g.fill();
+    // нижний ряд
+    g.beginPath();
+    g.moveTo(396, 812); g.quadraticCurveTo(512, 832, 628, 812);
+    g.lineTo(632, 776); g.quadraticCurveTo(512, 796, 392, 776);
+    g.closePath(); g.fill();
+
+    // перегородки зубов
+    g.strokeStyle = '#1d1512'; g.lineWidth = 6;
+    for (let i = 1; i < 6; i++){
+      const x = 392 + i * 41;
+      g.beginPath(); g.moveTo(x, 700 + Math.abs(i - 3) * 3); g.lineTo(x - 2, 736); g.stroke();
     }
-    g.strokeStyle = '#1d1512'; g.lineWidth = 8;
-    g.beginPath(); g.moveTo(414, 712); g.quadraticCurveTo(512, 690, 610, 712); g.stroke();
+    for (let i = 1; i < 5; i++){
+      const x = 412 + i * 41;
+      g.beginPath(); g.moveTo(x, 778); g.lineTo(x - 2, 818); g.stroke();
+    }
+    // контур пасти
+    g.lineWidth = 9;
+    g.beginPath(); g.moveTo(374, 698); g.quadraticCurveTo(512, 674, 650, 698); g.stroke();
   } else {                          // печаль
     g.beginPath(); g.arc(512, 786, 104, Math.PI * 1.20, Math.PI * 1.80); g.stroke();
   }
